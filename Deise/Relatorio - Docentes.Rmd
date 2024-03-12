@@ -1,0 +1,615 @@
+---
+title: "Relatório Docentes"
+author: "Davi Guerra"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    extra_dependencies: "subfig"
+css: style.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, cache = F)
+```
+
+
+```{r include=FALSE}
+setwd('D:/projetos/consultoria/Deise')
+pacman::p_load('tidyverse')
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(knitr)
+source('utils.R')
+
+data = read.csv('data_docentes.csv', encoding = "UTF-8")
+nome_cols = colnames(data)
+```
+
+
+```{r}
+colnames(data) = sapply(colnames(data), function(coluna) str_replace_all(coluna, "\\.", " "))
+
+nome_cols = colnames(data)
+
+data["Possui doutorado"] = "Não"
+data["Possui pós doutorado"] = "Não"
+
+data['Possui especialização Latu Sensus'] = sapply(data['Possui especialização Latu Sensus'], function(x) ifelse(x=="Sim","Sim","Não"))
+
+data['Possui mestrado'] = sapply(data['Possui mestrado'], function(x) ifelse(x=="Sim. Em Educação","Sim","Não"))
+
+escolaridade = c(
+"Possui especialização Latu Sensus",                        
+"Possui graduação",
+"Possui mestrado",
+"Possui doutorado", 
+"Possui pós doutorado")  
+
+data_escolaridade = data[escolaridade]
+
+for(col in names(data_escolaridade)){
+  data_escolaridade[col] = sapply(data_escolaridade[col], function(x) ifelse(x =="Sim",1,0))
+}
+
+grau_escolaridade = rowSums(data_escolaridade)
+escolaridade = sapply(grau_escolaridade, function(obs){
+  if(obs == 0){
+    return("Graduação")
+  }
+  
+  if(obs == 1){
+    return("Especialização")
+  }
+  
+  if(obs == 2){
+    return("Mestrado")
+  }
+})
+
+data['escolaridade'] = escolaridade
+data['grau_escolaridade'] = grau_escolaridade
+
+data$`Qual referencial teórico utilizado` = str_replace_all(data$`Qual referencial teórico utilizado`,"vigotski","vygotsky") 
+
+data$`Qual referencial teórico utilizado` = str_replace_all(data$`Qual referencial teórico utilizado`,"Vigotski","vygotsky") 
+
+```
+
+
+```{r}
+  
+colunas_nao_uteis = c("Possui graduação","Tipo de graduação","Instituição de graduação","Possui especialização Latu Sensus","Instituição do Latu Sensus","Tipo do Latu Sensus","Instituição do mestrado","Tipo do mestrado","Possui doutorado","Instituição do doutorado","Tipo do doutorado","Possui pós doutorado","Instituição do pós doutorado","Tipo do pós doutorado" ,"Possui pós doutorado em outra área" )      
+  
+data = data %>% 
+  select(!all_of(colunas_nao_uteis)) %>%
+  rename("Coordenação de Regional de Ensino CRE de atuação" = `Modalidade de ensino atual`,
+         "Coordenação de Regional de Ensino CRE de lotação" = `Coordenação regional de ensino`)
+
+```
+
+# Introdução
+
+Esse relatório tem como objetivo entender os elementos relacionados à ludicidade, baseado nas reposta dos professores que atuam nos Centros de Vivências Lúdicas - Oficinas Pedagógicas da Secretaria de Educação do Distrito Federal. Essa relatório compreende a resposta de `r dim(data)[0]` docentes. As análises estatísticas foram feitas no *software* R, versão 4.3.0. As análises incluem informações demográficas a respeito dos respondentes e também uma análise textual envolvendo as repostas sobre o papel da ludicidade e seus derivados.
+
+
+# Parte I - Análise descritiva
+
+A seção a seguir diz respeito sobre o perfil sociodemográfico dos professores docentes das oficinas de ludicidade.
+
+
+Na análise da etnia dos participantes, observa-se que a maioria, 56%, se identifica como parda. A etnia de menor representação é a amarela, com 6,67\%. As outras categorias incluem Branca (26,67\%) e Preta (10\%).
+
+```{r fig.dim = c(5, 3), fig.align = 'center'}
+barras(data, "Cor",save=T,dir_ = "images/docentes")
+```
+
+Quanto à idade dos docentes, a predominância é na faixa dos 40 aos 54 anos, representando mais de 73\%. A faixa dos 40 aos 49 anos tem a maior concentração, com 40\%. A faixa dos 30 aos 39 anos apresenta a menor representação, com 6,67\%.
+
+```{r fig.dim = c(5, 4), fig.align = 'center'}
+barras(data, "Idade",save=T,dir_ = "images/docentes", is_ordem_vars = TRUE,ordem_vars =  c("De 30 a 39 anos","De 40 a 49 anos","De 50 a 54 anos","55 anos ou mais"))
+```
+
+Em termos de gênero, a maioria dos docentes é do sexo feminino, representando 83,3\%, enquanto o sexo masculino compreende 16,6\% das respostas.
+
+```{r fig.dim = c(5, 3), fig.align = 'center'}
+barras(data, "Sexo",save=T,dir_ = "images/docentes")
+```
+
+No que diz respeito à escolaridade, 80\% possuem especialização Latu Sensus, 16\% têm apenas graduação e menos de 4\% possuem mestrado.
+
+```{r fig.dim = c(5, 3), fig.align = 'center'}
+barras(data = data, coluna = "escolaridade",save=T,dir_ = "images/docentes", xlab = T, nome_coluna = "Escolaridade", is_ordem_vars = TRUE,ordem_vars =  c("Graduação","Especialização","Mestrado"))
+```
+
+
+Sobre a experiência docente no setor privado, a maioria dos professores não tem experiência nessa área, somando 11 participantes (mais de 36\%). Aqueles com mais de 10 anos de experiência representam menos de 17\%.
+    
+```{r}
+criar_tabela(data, "Tempo de docência na educação privada",
+             is_ordem_vars=T, 
+             ordem_vars = c("Nunca atuei","Menos de 1 ano","Até 5 anos","De 6 a 10 anos",
+                            "De 11 a 15 anos","De 16 a 20 anos","De 21 a 25 anos",
+                            "Não possuo"))  %>%
+  kable(., caption = "Frequência do tempo de docência na educação privada.")
+```
+
+Na educação pública, a maioria (70\%) dos docentes tem mais de 10 anos de experiência, com 25 respondentes. A faixa etária mais representativa é de 21 a 25 anos, com 30\% das respostas.
+
+```{r}
+criar_tabela(data, "Tempo de docência na educação pública", 
+             is_ordem_vars=T, 
+             ordem_vars = c("De 6 a 10 anos","De 11 a 15 anos",
+                            "De 16 a 20 anos","De 21 a 25 anos",
+                            "De 26 a 30 anos","Acima de 30 anos")) %>% 
+  kable(., caption = "Frequência do tempo de docência na educação pública")
+```
+
+
+Analisando o tempo de docência no SEEDF, a faixa etária mais comum é de 21 a 25 anos (26,6\%), seguida por 26 a 30 anos (23,33\%). A menor representação é acima de 30 anos, com apenas 2 respostas.
+
+```{r}
+criar_tabela(data, "Tempo de docência no SEEDF",
+             is_ordem_vars=T, 
+             ordem_vars = c("De 6 a 10 anos","De 11 a 15 anos",
+                            "De 16 a 20 anos","De 21 a 25 anos",
+                            "De 26 a 30 anos","Acima de 30 anos")) %>% 
+  kable(., caption = "Frequência do tempo de docência no SEEDF.")
+```
+
+
+Em relação à frequência na Coordenação de Regional de Ensino CRE de lotação, as respostas são homogêneas entre as regionais.
+
+```{r}
+criar_tabela(data, "Coordenação de Regional de Ensino CRE de lotação") %>% kable(., caption = "Frequência da Coordenação de Regional de Ensino CRE de lotação.")
+```
+
+Na Coordenação de Regional de Ensino CRE de atuação, a mais representada é a do CRE Paranoá, com 13\% dos professores (4 respostas). Brazlândia, Núcleo Bandeirante e Plano Piloto têm a menor representação, com uma observação cada.
+
+```{r}
+criar_tabela(data, "Coordenação de Regional de Ensino CRE de atuação") %>% kable(., caption = "Frequência da Coordenação de Regional de Ensino CRE de atuação")
+```
+
+Todos os professores possuem uma carga horária de 40 horas semanais no SEEDF.
+
+
+```{r}
+criar_tabela(data, "Carga horária de trabalho no SEEDF") %>% kable(., caption = "Frequência da carga horária de trabalho no SEEDF.")
+```
+
+Quanto ao vínculo institucional no SEEDF, a categoria "Professor Efetivo - Área Específica" tem 60\% das respostas (18 professores) e "Professor Efetivo - Atividades" representa 40\% (12 professores).
+
+```{r}
+criar_tabela(data, "Vínculo institucional no SEEDF") %>% kable(., caption = "Frequência do vínculo institucional no SEEDF.")
+```
+
+# Parte II - Analisando a Ludicidade
+
+
+```{r fig.dim = c(5, 3), fig.align = 'center'}
+barras(data, "Realizou alguns dos cursos das oficinas pedagógicas da SEEDF", save=T,dir_ = "images/docentes")
+```
+
+
+Observando o gráfico acima é possível notar que mais de 76\% dos professores realizaram alguns dos cursos
+oferecidos presentes nas oficinas da SEEDF.
+
+\newpage
+
+```{r}
+criar_tabela(data, "Quanto tempo como professor em formação nos cursos da oficina", is_nome_coluna = T, nome_coluna =  "Quanto tempo como professor em formação nos cursos da Oficina",is_ordem_vars=T, ordem_vars = c("Menos de 1 ano","Até 5 anos","De 6 a 10 anos",
+                            "De 16 a 20 anos","De 21 a 25 anos",
+                            "De 25 a 30 anos","Não fui professor(a) cursista no CVLOP (Oficina Pedagógica)")) %>% kable
+```
+
+A tabela apresentada oferece uma visão detalhada do tempo em que o professor estava participando como cursista em cursos da Oficina pedagógica. A maior proporção de professores, correspondendo a 43,33\% (13 professores), possui até 5 anos de como professor em formação. Seguindo isso, 20\% (6 professores) têm menos de um ano de formação. Aqueles que não foram professores cursistas no CVLOP (Oficina Pedagógica) constituem 16,67\% (5 professores), enquanto as faixas de tempo de formação de 6 a 10 anos, 16 a 20 anos, 21 a 25 anos e de 25 a 30 anos são  menores em representação, cada uma com um único professor, correspondendo a 3,33\% ou 10\% no caso de 6 a 10 anos.
+
+```{r}
+criar_tabela(data, "É professor formador no mesmo local que realizou a oficina" ) %>% 
+  mutate(`É professor formador no mesmo local que realizou a oficina` = ifelse(`É professor formador no mesmo local que realizou a oficina` == "Sim","Sim","Não")) %>% 
+  group_by(`É professor formador no mesmo local que realizou a oficina`) %>% 
+  summarise(`Frequência \\ absoluta` = sum(`Frequência \\ absoluta`)) %>%
+    arrange(desc(`Frequência \\ absoluta`)) %>% 
+    mutate(`Frequência \\ relativa` = str_replace(str_c(round((`Frequência \\ absoluta`/sum(`Frequência \\ absoluta`))*100,2),"%"),'\\.',',')) %>% kable(., caption = "Frequência dos professores que são formadores no mesmo CVLOP em que foram professores cursistas.")
+
+```
+
+Analisando se os professores formadores continuam como professores no mesmo CVLOP onde foram professores cursistas, é possível perceber que 73,3\% continua no mesmo local, e 26,6 \% atual em um local diferente.
+
+
+```{r}
+criar_tabela(data, "Local em que atua como professor formador" ) %>% kable(., caption = "Frequência dos locais onde os professores atuam como formadores.")
+```
+
+É possível perceber que o local com mais respostas foi o CVLOP Paranoá, com 4 respostas, o que corresponde a mais de 13\% da amostra. Brazlândia, Núcleo Bandeirante, Plano Piloto e Samambaia obtiveram apenas 1 resposta cada, onde somadas representam um pouco mais de 13\% da amostra.
+
+```{r}
+criar_tabela(data, "Tempo de atuação como professor formador",
+             is_ordem_vars=T, 
+             ordem_vars = c("Menos de 1 ano","Até 5 anos","De 6 a 10 anos",
+                            "De 11 a 15 anos","De 16 a 20 anos","De 21 a 25 anos")) %>% 
+  kable(., caption = "Frequência do tempo de atuação como professor formador.")
+```
+
+Observando o tempo de atuação como professor formador, é possível analisar que a classe com maior frequência é a de até 5 anos, representando mais de 43\% dos dados. As faixas etárias com menos respostas foram as de 6 a 10 anos e 16 a 20 anos, com 1 resposta cada.
+
+```{r}
+criar_tabela(data, "Tempo como professor formador na oficina atual",
+             is_ordem_vars=T, 
+             ordem_vars = c("Menos de 1 ano","Até 5 anos","De 6 a 10 anos",
+                            "De 11 a 15 anos","De 16 a 20 anos","De 21 a 25 anos")
+             ) %>% kable(., caption = "Frequência do tempo de atuação como professor formador na atual oficina.")
+```
+
+Quando analisado somente o período de atuação da atual oficina, é possível perceber que a faixa etária de até 5 anos continua sendo a com mais repostas, agora representando 50\% de todas as resposta da amostra. As faixas etárias de 6 a 10 anos e 16 a 25 anos representam as classes com menos aparições que, somadas, resultam em 3 respostas, totalizando um percentual de quase 10\%.
+
+```{r}
+col_abertas = c("X5 razões para ser professor formador",
+                "Qual atividade contribui mais como professor formador" ,
+                "Atividade que dificulta a atuação como professor formador",
+                "Qual referencial teórico utilizado",
+                "Significado de ludicidade" ,
+                "Significade de oferecer a ludicidade na formação dos professores",
+                "Significade de ser professor formador"  
+                )
+
+```
+
+
+# Variável: Razões para ser professor formador
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+words = preprocess_text(data = data, column = "X5 razões para ser professor formador")
+words = words[words != ""]
+word_freq <- table(words)
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+```
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas.",  label = "label")
+```
+
+A Tabela acima indica a quantidade de vezes que as palavras destacadas apareceram no conjunto total das respostas. Foi feito um recorte das 10 palavras que mais foram utilizadas nas respostas de todos os discentes. Note que o docente pode ter utilizado a mesma palavra múltiplas vezes na mesma resposta. 
+
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = "X5 razões para ser professor formador", top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+A Tabela acima mostra a taxa de utilização das palavras mostradas na Tabela 6, nas respostas de cada discente. É importante notar que uma palavra que teve uma aparição maior nas respostas não indica que a mesma foi utilizada por mais discentes, dado que
+os dados analisados na Tabela 13 mostram as palavras podem se repetir entre as respostas.
+Com isso, os dados da Tabela 14 mostram o quanto os docentes estão relacionando 
+determinada palavra com a pergunta realizada.
+
+Observando os resultados acima é possível perceber que todos os professores utilizaram a palavra "formação" para descrever a razão em se tornar professor formador. É possível notar também palavras relacionadas à forma do trabalho, como a palavra "pedagógica" e "continuada". Ambas estiveram em mais 90\% das respostas dos usuários, onde a palavra "pedagógica" foi utilizada 73 vezes nas respostas e a palavra
+continuada, 52 vezes.   
+
+
+
+# Variável: Qual atividade contribui mais como professor formador
+
+
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta =  "Qual atividade contribui mais como professor formador"
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+
+```
+
+
+Analisando a nuvem de palavras é possível perceber que as palavras derivadas da palavra "formação" foram utilizadas com frequência nas respostas. A palavra "ludicidade" é uma outra palavra que, visualmente, 
+tem destaque, em relação às demais.
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+Observando a Tabela acima, é possível observar que as palavras, ou derivados da mesma, que mais aparecem nas respostas foram: formação (47), docente (35), possibilidade (30), aprender (29) e ludicidade (28).
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+
+Observando as palavras mais utilizadas, é possível notar que "formacao" foi utilizada em mais de 86\% das respostas. "aprender" e "ensinar" foram utilizadas por 80\% dos docentes. Já ludicidade aparece em 76,67\%.
+
+
+# Variável: Atividade que dificulta a atuação como professor formador
+
+
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta = "Atividade que dificulta a atuação como professor formador"
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+
+```
+
+
+Analisando a nuvem de palavras acima, é possível observar algumas palavras que muitos docentes utilizaram para descrever em atuar como professor formador, como por exemplo: "eape", "chefia" e "demandas".
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+Ao analisar as palavras que podem trazer mais valor semântico para a dificuldade em ser professor formador é possível notar a constante utilização da palavra "formacao" aparecendo 41 vezes, "eape" (23), "chefia" (14) e "cre" (14).
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+```
+
+As palavras destacadas da Tabela 17 apareceram com a seguinte frequência nas respostas: "formacao", aparecendo em mais de 83\% das respostas, "eape", aparecendo em 60\% e "cre", com mais de 46\% de frequência.
+
+
+# Variável: Qual referencial teórico utilizado
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta = "Qual referencial teórico utilizado"
+
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+col_abertas = c(
+                "Significado de ludicidade" ,
+                "Significade de oferecer a ludicidade na formação dos professores",
+                "Significade de ser professor formador"  
+                )
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+
+```
+
+Analisando o as referências que os professores usaram, é possível perceber que os autores mais mencionados foram: vygotsky, luckesi e huizinga.
+
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+A frequência em que os docentes utilizaram o nome dos autores nas resposta foi de: luckesi (18), huizinga (13) e vygostky (13).
+
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+A porcentagem de docentes que utilizaram os autores destacados anteriormente foi de: luckesi, presente em 60% das respostas, huizinga (43,33\%) e vygotsky (43,33\%).
+
+# Variável: Significado de ludicidade
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta = "Significado de ludicidade"
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+
+```
+
+Ao analisar as palavras que os docentes mais utilizaram para descrever a ludicidade, é possível perceber que "aprender" foi a que mais se destaca. "brincadeiras", "prazer" e "jogos" são outras palavras que aparecem com mais frequência.
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+Segundo a Tabela 21, a palavra "aprender" foi a mais utilizada, aparecendo 10 vezes nas respostas dada pelos docentes. "jogos", "prazer" e "ser" aparecem em seguida, com cada uma delas sendo mencionadas 6 vezes.
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+A taxa de utilização das palavras mencionadas anteriormente foi de: 33,33%, para a palavra "aprender", 20\%, para "jogos" e "prazer" e 16,67\% para a palavra "brincadeiras".
+
+
+# Variável: Significado de oferecer a ludicidade na formação dos professores
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta = "Significade de oferecer a ludicidade na formação dos professores"
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+
+```
+
+
+Visualizando as palavras acima, é possível perceber algumas que foram utilizadas com frequência e que possam trazer algum sentido para análise, como é o caso das palavras: emoções, prazer e aprender.
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:23] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+Observando a tabela acima, nota-se que a palavra ludicidade foi a mais utilizada, aparecendo 12 vezes nas repostas e palavras que estão relacionadas também foram usadas com frequência, como é o caso da palavra "aprendizado" e "aprendizagem", onde somadas as duas aparecem 11 vezes.
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 23)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+Observando os resultados acima, é possível perceber que os docentes utilizaram diferentes palavras para descrever o significado de oferecer a ludicidade na educação, visto que a palavra mais repetida entre os docentes, ludicidade, apareceu em somente 30\% das respostas.
+
+
+# Variável: Significado de ser professor formador
+
+## Nuvem de palavras
+
+
+```{r echo=FALSE, warning=FALSE}
+var_resposta = "Significade de ser professor formador"
+words = preprocess_text(data = data, column = var_resposta)
+words = words[words != ""]
+word_freq <- table(words)
+
+# Create the word cloud plot
+par(bg="black") # Set the background color to black
+wordcloud(names(word_freq), freq=word_freq, col=terrain.colors(length(word_freq), alpha=0.9), rot.per=0.3)
+```
+
+
+Observando as palavras utilizadas para descrever o significado de ser professor formador, é possível analisar que palavras como: "experiencias", "ludicidade" e "prazer" foram umas das que obtiveram a maior frequência de aparição nas respostas dos docentes.
+
+
+\newpage
+
+```{r, echo=FALSE}
+library(knitr)
+sort(word_freq, decreasing = T)[1:20] %>% 
+  kable(., col.names = c("Palavras", "Frequência"), caption = "Número de vezes em que a palavra foi utilizada em todas as respostas")
+```
+
+A palavra mais utilizada foi "ser", aparecendo num total de 7 vezes. "ludicidade" aparece em seguida, com 6 aparições e "contribuir", "experiências" e "prazer" aparecem 5 vezes cada.
+
+```{r, echo=FALSE}
+palavras_por_usuario <- calculate_word_frequency(data = data, column = var_resposta, top_n = 20)
+
+# Prepare data for table
+nome_palavras <- names(palavras_por_usuario)
+freq_por_user <- paste0(round(100 * palavras_por_usuario / nrow(data), 2), "%")
+
+data.frame(nome_palavras, freq_por_user) %>% 
+  kable(., col.names = c("Palavras", "Porcentagem"), caption = "Frequência em que os discentes utilizaram cada palavra")
+
+
+```
+
+
+Assim como a análise anterior, os docentes responderam a questão sobre o significado de ser professor formador de maneira heterogênea, no ponto de vista da utilização das palavras, pois a palavra "ser", que é a palavra com mais aparição entre os docentes, está presente em menos de 24\% das respostas.
+
+\newpage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

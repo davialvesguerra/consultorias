@@ -1,0 +1,91 @@
+Code,Description
+A17,As causas evitáveis reduzíveis por ações de imunoprevenção
+A19,As causas evitáveis reduzíveis por ações de imunoprevenção
+A33,As causas evitáveis reduzíveis por ações de imunoprevenção
+A35,As causas evitáveis reduzíveis por ações de imunoprevenção
+A36,As causas evitáveis reduzíveis por ações de imunoprevenção
+A37,As causas evitáveis reduzíveis por ações de imunoprevenção
+A80,As causas evitáveis reduzíveis por ações de imunoprevenção
+B05,As causas evitáveis reduzíveis por ações de imunoprevenção
+B06,As causas evitáveis reduzíveis por ações de imunoprevenção
+B16,As causas evitáveis reduzíveis por ações de imunoprevenção
+B26.0,As causas evitáveis reduzíveis por ações de imunoprevenção
+G00.0,As causas evitáveis reduzíveis por ações de imunoprevenção
+P35.0,As causas evitáveis reduzíveis por ações de imunoprevenção
+P35.3,As causas evitáveis reduzíveis por ações de imunoprevenção
+A50,As causas reduzíveis por adequada atenção à mulher na gestação
+B20 a B24,As causas reduzíveis por adequada atenção à mulher na gestação
+P02.2, P02.3, P02.7, P02.8, P02.9,As causas reduzíveis por adequada atenção à mulher na gestação
+P00, P04,As causas reduzíveis por adequada atenção à mulher na gestação
+P01,As causas reduzíveis por adequada atenção à mulher na gestação
+P05,As causas reduzíveis por adequada atenção à mulher na gestação
+P07,As causas reduzíveis por adequada atenção à mulher na gestação
+P22.0,As causas reduzíveis por adequada atenção à mulher na gestação
+P26,As causas reduzíveis por adequada atenção à mulher na gestação
+P52,As causas reduzíveis por adequada atenção à mulher na gestação
+P55.0, P55.1,As causas reduzíveis por adequada atenção à mulher na gestação
+P55.8 a P57.9,As causas reduzíveis por adequada atenção à mulher na gestação
+P77,As causas reduzíveis por adequada atenção à mulher na gestação
+P02.0 a P02.1,As causas reduzíveis por adequada atenção ao recém-nascido
+P02.4 a P02.6,As causas reduzíveis por adequada atenção ao recém-nascido
+P03,As causas reduzíveis por adequada atenção ao recém-nascido
+P08,As causas reduzíveis por adequada atenção ao recém-nascido
+P10 a P15,As causas reduzíveis por adequada atenção ao recém-nascido
+P20, P21,As causas reduzíveis por adequada atenção ao recém-nascido
+P24, exceto P24.3,As causas reduzíveis por adequada atenção ao recém-nascido
+P22.1, P22.8, P22.9, P23, P25, P27, P28,As causas reduzíveis por adequada atenção ao recém-nascido
+P35 a P39.9, exceto P35.0 e P35.3,As causas reduzíveis por adequada atenção ao recém-nascido
+P50 a P54,As causas reduzíveis por adequada atenção ao recém-nascido
+P58, P59,As causas reduzíveis por adequada atenção ao recém-nascido
+P70 a P74,As causas reduzíveis por adequada atenção ao recém-nascido
+P60, P61,As causas reduzíveis por adequada atenção ao recém-nascido
+P75 a P78,As causas reduzíveis por adequada atenção ao recém-nascido
+P80 a P83,As causas reduzíveis por adequada atenção ao recém-nascido
+P90 a P96.8,As causas reduzíveis por adequada atenção ao recém-nascido
+A15,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+A16,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+A18,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+G00.1 a G03,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J00 a J06,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J12 a J18,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J20 a J22,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J38.4,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J40 a J47, exceto J43 e J44,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+J68 a J69,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+A70 a A74,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+A30, A31, A32, A38, A39, A40, A41, A46, A49,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+E03.0, E03.1,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+E10 a E14,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+E70.0,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+E73.0,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+G40, G41,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+Q90,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+N39.0,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+I00 a I09,As causas reduzíveis por ações adequadas de diagnóstico e tratamento
+A00 a A09,As causas reduzíveis por ações adequadas de promoção à saúde
+A20 a A28,As causas reduzíveis por ações adequadas de promoção à saúde
+A90 a A99,As causas reduzíveis por ações adequadas de promoção à saúde
+A75 a A79,As causas reduzíveis por ações adequadas de promoção à saúde
+A82,As causas reduzíveis por ações adequadas de promoção à saúde
+B50 a B64,As causas reduzíveis por ações adequadas de promoção à saúde
+B65 a B83,As causas reduzíveis por ações adequadas de promoção à saúde
+B99,As causas reduzíveis por ações adequadas de promoção à saúde
+D50 a D53,As causas reduzíveis por ações adequadas de promoção à saúde
+E40 a E64,As causas reduzíveis por ações adequadas de promoção à saúde
+E86,As causas reduzíveis por ações adequadas de promoção à saúde
+V01 a V99,As causas reduzíveis por ações adequadas de promoção à saúde
+X40 a X44,As causas reduzíveis por ações adequadas de promoção à saúde
+X45 a X49,As causas reduzíveis por ações adequadas de promoção à saúde
+R95,As causas reduzíveis por ações adequadas de promoção à saúde
+W00 a W19,As causas reduzíveis por ações adequadas de promoção à saúde
+X00 a X09,As causas reduzíveis por ações adequadas de promoção à saúde
+X30 a X39,As causas reduzíveis por ações adequadas de promoção à saúde
+W65 a W74,As causas reduzíveis por ações adequadas de promoção à saúde
+W75 a W84,As causas reduzíveis por ações adequadas de promoção à saúde
+W85aW99,As causas reduzíveis por ações adequadas de promoção à saúde
+X85aY09,As causas reduzíveis por ações adequadas de promoção à saúde
+Y10 a Y34,As causas reduzíveis por ações adequadas de promoção à saúde
+W20 a W49,As causas reduzíveis por ações adequadas de promoção à saúde
+Y60 a Y69,As causas reduzíveis por ações adequadas de promoção à saúde
+Y83 a Y84,As causas reduzíveis por ações adequadas de promoção à saúde
+Y40 a Y59,As causas reduzíveis por ações adequadas de promoção à saúde

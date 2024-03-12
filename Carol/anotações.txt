@@ -1,0 +1,40 @@
+Objetivo geral:
+O objetivo deste estudo é identificar a taxa de mortalidade em crianças menores de
+5 anos, no Distrito Federal, nos anos de 2018 a 2022.
+
+Objetivos específicos:
+-Descrever a evolução da taxa de mortalidade em crianças menores de 5 anos,
+quanto ao componente etário, variáveis sociodemográficas e evitabilidade;
+-Correlacionar a evolução da taxa de mortalidade em crianças menores de 5 anos,
+com a cobertura pela estratégia de saúde da família e cobertura vacinal, nos anos de 2018
+a 2022.
+
+
+Dados:
+ - https://gitlab.com/controle-de-qualidade-sarah/extracao-datasus/-/blob/master/funcoes.R?ref_type=heads
+ 
+ https://info.saude.df.gov.br/nascidosvivosdfsalasit/
+ https://info.saude.df.gov.br/obitosnodfsalasit/
+ 
+ 
+ 
+ 
+ 
+ TODO:  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 

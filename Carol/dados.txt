@@ -1,0 +1,20 @@
+dados de 2018 até 2022
+
+#dados de mortalidade
+- mortalidade causas evitáveis menores de 5 anos
+- utilizar variáveis sociodemográficas 
+- usar as regiões administrativas
+
+#lista de cnes
+https://cnes2.datasus.gov.br/Mod_Ind_Especialidades_Listar.asp?VTipo=111&VListar=1&VEstado=53&VMun=&VComp=201511&VTerc=1&VServico=&VClassificacao=&VAmbu=&VAmbuSUS=&VHosp=&VHospSus=
+
+#dados de pré natal
+https://sisab.saude.gov.br/paginas/acessoPublico/relatorio/indicadores/IndicadorPrenatal.xhtml
+- esse link gera informações sobre pré natal nas cnes do df
+- sugestão: pegar o número de pre natal que cada cnes teve
+  agrupar pela respectiva região administrativa e 
+  comparar com os casos de mortes evitáveis por gravidez
+  de menores de 5 anos 
+
+
+https://onlinelibrary.wiley.com/doi/10.1002/sim.9669?af=R

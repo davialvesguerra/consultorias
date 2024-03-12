@@ -1,0 +1,41 @@
+ajustando nomes e recuperando padronização
+
+dia 1:
+30min
+obs:
+-  usar uma função para verificar como está os nomes das variáveis
+-  usar uma função para verificar os valores únicos das variáveis
+
+dia 2:
+20min
+- mudança do nome das variáveis
+
+dia3:
+20min
+- mudança do nome das variáveis
+
+dia4:
+40min
+- fazendo gráfico de nuvem de palavras
+
+
+dia5:
+40min:
+- fazendo a freq das palavras
+
+dia6:
+60min:
+- fazendo a freq das palavras
+
+dia7:
+120min:
+- fazendo relatório
+
+dia8:
+120min:
+- escrevendo as análises
+
+
+
+
+
