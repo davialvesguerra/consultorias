@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-setwd("D:/projetos/consultoria/Carol")
+setwd("D:/projetos/consultorias/Carol")
 
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, cache = F)
 library(tidyverse)
@@ -28,6 +28,7 @@ colnames(dados_descricao_cids) = c("i_cid_obito", "morte_evitavel","evitavel_imu
                                    "assistencia_gestacao","atencao_parto","atencao_feto_nascido",
                                    "diagnostico_tratamento","promocao_saude")
 dados_mortalidade = merge(dados_mortalidade, dados_descricao_cids, by = c("i_cid_obito"), all = TRUE)
+
 
 dados_mortalidade = dados_mortalidade %>% 
   # filter(assistencia_gestacao == T) %>%
@@ -52,7 +53,23 @@ dados_mortalidade = dados_mortalidade %>%
 - Em geral: https://sisab.saude.gov.br/paginas/acessoPublico/relatorio/indicadores/IndicadorPrenatal.xhtml;jsessionid=NQ21rr1pLd1AF9tNKosFQzbG
 
 
-## Anális descritiva
+## Referencial teórico
+
+A Regressão de *Prais-Winsten* é uma metodologia estatística desenvolvida com o propósito de analisar e identificar padrões e tendências em séries temporais. Essa técnica é particularmente útil no estudo de como uma variável dependente, designada por "Y", evolui ao longo do tempo em função de uma ou mais variáveis independentes, neste caso, exemplificada pela variável "X". O foco dessa abordagem é determinar se, ao longo dos anos, a variável Y demonstra alguma tendência específica, que pode ser de crescimento, declínio ou de estabilidade.
+
+
+O comportamento observado em uma série temporal, através da Regressão de Prais-Winsten, é representado por uma equação de regressão linear, a qual inclui um componente específico para capturar a tendência temporal. A equação é dada por:
+
+$$
+Y_i = \beta_1X_i + \beta_0, 
+$$
+Sendo $\beta_1$ o componente de tendência analisado. 
+
+Com isso, é utilizado o teste-t para avaliar o $\beta_1$ e consequentemente indicar se não existe tendência na série ou se existe, e caso afirmativo, indicar se a mesma é positiva ou 
+negativa.
+
+
+## Análise descritiva
 
 ```{r}
 menor_ano = min(dados_mortalidade$i_ano_obito)
@@ -64,92 +81,131 @@ n_cols = dim(dados_mortalidade)[2]
 
 Os dados analisados são decorrentes dos anos 2018 até o ano de 2022. A mortalidade de menores de 5 anos, no Distrito Federal, nesses anos foi de `r n_obs`.
 
+```{r}
+criar_tabela(dados_mortalidade, 'i_ano_obito', 'Ano') %>% 
+  arrange(Ano) %>% 
+  kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no Distrito Federal, em relação ao Ano.", booktabs = T,format =  "latex") %>% 
+  kable_styling(position = "center", latex_options=c("striped","HOLD_position"))
+```
+Observando a tabela acima, é possível perceber a distribuição dos óbitos infantis entre os anos de 2018 a 2022. A frequência entre os anos se aproxima entre elas, com a menor taxa registrada no ano de 2020, com 18,41\% de óbitos, e a maior registrada foi em 2018, com 22,39\% de óbitos.
+
+
 Abaixo segue a distribuição da mortalidade nas variáveis: Sexo, Cor, Região e outras, nesse recorte temporal.
 
 ```{r}
-x = criar_tabela(dados_mortalidade, 'i_desc_raca_cor') %>% 
+criar_tabela(dados_mortalidade, 'i_desc_raca_cor', 'Cor') %>% 
   kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no Distrito Federal, em relação à Cor.", booktabs = T,format =  "latex") %>% 
   kable_styling(position = "center", latex_options=c("striped","HOLD_position"))
 ```
 
+
+É possível perceber da tabela acima que as crianças com o maior número de óbitos são as consideradas pardas, representando um total de 53,57\% de óbitos em relação aos demais subgrupos.
+
 ```{r}
-x = criar_tabela(dados_mortalidade, 'i_faixa_etaria') %>%
+criar_tabela(dados_mortalidade, 'i_faixa_etaria', "Faixa etária") %>%
   kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no Distrito Federal, em relação à Faixa Etária.", booktabs=T,format =  "latex") %>%
   kable_styling(position = "center",latex_options=c("striped","HOLD_position"))
 ```
 
+
+A tabela acima mostra que, entre as crianças de 0 a 5 anos, a maior taxa de mortalidade se encontra nos primeiros meses de vida, onde os óbitos de crianças de até 1 ano representam
+mais de 90\% da mortalidade infantil no Distrito Federal.
+
+
+
 ```{r}
-x = criar_tabela(dados_mortalidade, 'i_desc_local_obito') %>% 
+criar_tabela(dados_mortalidade, 'i_desc_local_obito',"Local do óbito") %>% 
   kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no Distrito Federal, em relação ao local do óbito.", booktabs=T,format =  "latex") %>%
   kable_styling(position = "center",latex_options=c("striped","HOLD_position"))
 ```
 
+
+
+Analisando a tabela acima, é possível perceber que o local com a maior frequência de óbito foi dentro dos hospitais, representando mais de 96\% dos locais em que foram registrado os óbitos das crianças.
+
 \newpage
 
 ```{r}
-x = criar_tabela(dados_mortalidade, 'i_desc_radf_res') %>%
-  kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no Distrito Federal, em relação à Região de Saúde", booktabs=T,format =  "latex") %>%
-  kable_styling(position = "center",latex_options=c("striped","HOLD_position"))
+ criar_tabela(dados_mortalidade, 'i_desc_regiao_saude_res',"Região de Saúde") %>%
+  filter(`Região de Saúde` != "") %>% 
+   kbl(., caption = "Distribuição da mortalidade infantil, entre menores de 5 anos, no distrito Federal, em relação à Região de Saúde", booktabs=T,format =  "latex") %>%
+   kable_styling(position = "center",latex_options=c("striped","HOLD_position"))
 ```
 
+ \newpage
 
 
-\newpage
 
-## Número de óbitos e taxa de mortalidade nos anos de 2018 e 2022
+# Análise de tendências
 
-```{r include=FALSE}
-dados_mortalidade_radf = dados_mortalidade %>% 
-    group_by(i_ano_obito, i_desc_radf_res) %>%
-    summarise(freq = n()) %>% 
-    rename("ano"=i_ano_obito, "regiao"=i_desc_radf_res) %>% 
-    data.table
+```{r include=F}
+dados_mortalidade_regiao <- sumarizar_dados_por_ano(dados_mortalidade, "i_ano_obito", "i_desc_radf_res")
+dados_nasc_vivos_regiao <- sumarizar_dados_por_ano(dados_nasc_vivos, "i_ano_nasc", "i_desc_radf_res_mae")
 
-dados_nasc_vivos_radf = dados_nasc_vivos %>% 
-  group_by(i_ano_nasc, i_desc_radf_res_mae) %>% 
-  summarise(freq = n()) %>% 
-  rename("ano"=i_ano_nasc, "regiao"=i_desc_radf_res_mae) %>% 
-  data.table
-
-dados_mort_nasc_radf = merge(dados_mortalidade_radf, dados_nasc_vivos_radf, by = c("ano", "regiao"), all = TRUE) %>% 
+dados_mort_nasc_regiao = merge(dados_mortalidade_regiao, dados_nasc_vivos_regiao, by = c("ano", "grupo"), all = TRUE) %>% 
    mutate(freq.x = replace_na(freq.x,0),
            taxa_mort = 1000*freq.x/freq.y,
            log_taxa_mort = log(taxa_mort)) %>% 
-  rename('grupo'=regiao) %>% 
   filter(log_taxa_mort != -Inf) %>% 
   filter(!(grupo %in% c("SIA","Arniqueiras","Lago Norte","Varjão","Núcleo Bandeirante","Paranoá","Fercal","Sol Nascente","Vicente Pires","Candangolândia")))
 
-dados_mort_nasc_radf_2018_2022 = dados_mort_nasc_radf %>% 
-  select(-c(freq.y,log_taxa_mort)) %>% 
-  pivot_wider(names_from = c("ano"), values_from = c("taxa_mort","freq.x")) %>% 
-  select(grupo, freq.x_2018, taxa_mort_2018, freq.x_2022, taxa_mort_2022) %>%
-  na.omit() 
+dados_mort_nasc_regiao_2018_2022 = pegar_dados_mortalidade_nascidos_vivos_total(dados_mort_nasc_regiao)
 
+pw_data_regiao = calculate_prais_winsten_summary(dados_mort_nasc_regiao, "grupo", "log_taxa_mort", "ano")
 
-pw_data_radf = calculate_prais_winsten_summary(dados_mort_nasc_radf, "grupo", "log_taxa_mort", "ano")
+data_regiao = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_regiao_2018_2022, pw_data_regiao)
 
-data_radf = merge(dados_mort_nasc_radf_2018_2022, pw_data_radf, by = c("grupo"), all = TRUE) %>% 
-  na.omit() %>%
-  mutate(coeficiente = as.numeric(coeficiente),
-         std_error = as.numeric(std_error),
-         p_valor = round(as.numeric(p_valor), 3),
-         VPA = round(-1 + (10**coeficiente), 3),
-         IC_sup = round(-1 + 10**(qt(0.975, 4) * std_error), 2),
-         IC_inf = round(-1 + 10**(qt(0.025, 4) * std_error), 2),
-         tendencia = ifelse(coeficiente < 0, "↓", "↑"),
-         tendencia = ifelse(p_valor < 0.05, tendencia, "-"),
-         IC = paste(IC_inf, IC_sup, sep = " - ")) %>%
-  select(grupo, freq.x_2018, taxa_mort_2018, freq.x_2022, taxa_mort_2022, p_valor, VPA, IC, tendencia) 
-
-row.names(data_radf) = NULL
+row.names(data_regiao) = NULL  
 ```
 
 ```{r}
-x = data_radf %>% 
-  kbl(caption="Mortalidade nas regiões admnistrativas e sua respectiva taxa de mortalidade(por 1000 nascidos vivos), nos anos 2018 e 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
-    kable_styling(position = "center",latex_options=c("striped","HOLD_position")) %>%
-    add_header_above(c(" " = 1, "2018" = 2, "2022" = 2))
+ data_regiao %>% 
+    kbl(caption="Resultados da regressão de Prais-Winsten em relação à taxa de mortalidade nas regiões do DF, entre crianças de 0 a 5 anos, no período de 2018 a 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
+    kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
+    add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>% 
+  footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
+                        "Taxa: Taxa de mortalidade infantil",
+                        "VPA(%): Porcentagem de variação anual"))
+
 ```
+
+
+```{r include=F}
+dados_mortalidade_evitavel = dados_mortalidade %>% 
+  filter(morte_evitavel == T) %>%
+  na.omit()
+
+dados_mortalidade_regiao <- sumarizar_dados_por_ano(dados_mortalidade_evitavel, "i_ano_obito", "i_desc_radf_res")
+dados_nasc_vivos_regiao <- sumarizar_dados_por_ano(dados_nasc_vivos, "i_ano_nasc", "i_desc_radf_res_mae")
+
+dados_mort_nasc_regiao = merge(dados_mortalidade_regiao, dados_nasc_vivos_regiao, by = c("ano", "grupo"), all = TRUE) %>% 
+   mutate(freq.x = replace_na(freq.x,0),
+           taxa_mort = 1000*freq.x/freq.y,
+           log_taxa_mort = log(taxa_mort)) %>% 
+  filter(log_taxa_mort != -Inf) %>% 
+  filter(!(grupo %in% c("SIA","Arniqueiras","Lago Norte","Varjão","Núcleo Bandeirante","Paranoá","Fercal","Sol Nascente","Vicente Pires","Candangolândia")))
+
+dados_mort_nasc_regiao_2018_2022 = pegar_dados_mortalidade_nascidos_vivos_total(dados_mort_nasc_regiao)
+
+pw_data_regiao = calculate_prais_winsten_summary(dados_mort_nasc_regiao, "grupo", "log_taxa_mort", "ano")
+
+data_regiao = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_regiao_2018_2022, pw_data_regiao)
+
+row.names(data_regiao) = NULL  
+```
+
+```{r}
+ data_regiao %>% 
+    kbl(caption="Resultados da regressão de Prais-Winsten em relação à taxa de mortalidade de causas evitáveis nas regiões do DF, entre crianças de 0 a 5 anos, no período de 2018 a 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
+    kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
+    add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>% 
+  footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
+                        "Taxa: Taxa de mortalidade infantil",
+                        "VPA(%): Porcentagem de variação anual"))
+
+```
+
+
 
 ```{r include=FALSE}
 dados_mortalidade_regiao <- sumarizar_dados_por_ano(dados_mortalidade, "i_ano_obito", "i_desc_regiao_saude_res")
@@ -164,15 +220,32 @@ pw_data_regiao = calculate_prais_winsten_summary(dados_mort_nasc_regiao, "grupo"
 data_regiao = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_regiao_2018_2022, pw_data_regiao)
 ```
 
+
+
+## Macrorregiões do Distrito Federal
+
+
 ```{r}
  data_regiao %>% 
     kbl(caption="Resultados da regressão de Prais-Winsten em relação à taxa de mortalidade de causas evitáveis nas regiões do DF, entre crianças de 0 a 5 anos, no período de 2018 a 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
     kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
     add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>% 
   footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
-                        "Taxa: Taxa de mortalidade envolvendo óbitos por causas evitáveis",
+                        "Taxa: Taxa de mortalidade infantil",
                         "VPA(%): Porcentagem de variação anual"))
+
+
+# mean(c(  9.635526 , 9.250694 , 24.896266 , 87.071240 , 18.867925))
+# mean(c( 20.150138 , 16.691395 , 14.566642 , 22.246143 , 16.100805))
+# mean(c( 15.191200 , 11.681056 , 12.224289 , 14.952781 , 13.182674))
+# mean(c( 19.879518 , 22.586717 , 19.244648 , 20.066040 , 19.740400))
+# mean(c(16.613526 , 17.109970 , 16.424214 , 12.987013 , 17.872487))
+# mean(c(  9.275163 , 6.736275 , 5.073567 , 6.248944 , 6.266126))
 ```
+
+Ao analisar as macrorregiões do Distrito Federal, é possível observar que a região com a maior taxa de mortalidade infantil é a Região Central, com uma taxa média de 29,94 óbitos a cada 1000 nascidos vivos. A região com a menor taxa de mortalidade foi a Região Sul, com uma taxa de 6,72. A única categoria que não apresentou uma tendência estacionária foi a Região Central, tendo essa apresentada uma VPA crescente de 2,93.
+
+
 
 <!-- ## Sexo -->
 
@@ -215,7 +288,43 @@ data_cor = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_cor_2018_202
 ```
 
 
-<!-- ## Faixa etária -->
+<!-- ## Local  -->
+
+```{r include = F}
+dados_mortalidade_local_obito = sumarizar_dados_por_ano(dados_mortalidade, "i_ano_obito", "i_desc_local_obito") %>% filter(grupo != 'Outros')
+
+dados_nasc_vivos_local_obito = dados_nasc_vivos %>%
+  group_by(i_ano_nasc) %>%
+  summarise(freq = n()) %>%
+  rename("ano"=i_ano_nasc) %>%
+  rbind(.,.,.,.) %>%
+  mutate("grupo" = c(rep("Domicílio",5), rep("Hospital",5),
+                     rep("Outro Estab de Saúde",5), rep("Via publica",5)))
+
+
+dados_mort_nasc_local_obito = unir_mortalidade_nascidos_vivos(dados_mortalidade_local_obito, dados_nasc_vivos_local_obito, c(""))
+
+dados_mort_nasc_local_obito_2018_2022 = pegar_dados_mortalidade_nascidos_vivos_total(dados_mort_nasc_local_obito)
+#
+pw_data_local_obito = calculate_prais_winsten_summary(dados_mort_nasc_local_obito, "grupo", "log_taxa_mort", "ano")
+
+data_local_obito = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_local_obito_2018_2022, pw_data_local_obito)
+
+
+```
+
+```{r}
+
+ data_local_obito %>% 
+    kbl(caption="Resultados da regressão de Prais-Winsten em relação à taxa de mortalidade de causas evitáveis nos locais de óbito do DF, entre crianças de 0 a 5 anos, no período de 2018 a 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
+    kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
+    add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>% 
+  footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
+                        "Taxa: Taxa de mortalidade infantil",
+                        "VPA(%): Porcentagem de variação anual"))
+
+```
+
 
 ```{r include=FALSE}
 dados_mortalidade_faixa_etaria <- sumarizar_dados_por_ano(dados_mortalidade, "i_ano_obito", "i_faixa_etaria")
@@ -245,6 +354,8 @@ data_faixa_etaria = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_fai
 \newpage
 
 
+## Variáveis demográficas
+
 ```{r}
 a = data_cor
 colnames(a) = 1:dim(a)[2]
@@ -263,9 +374,28 @@ rbind(a,b,c) %>%
     pack_rows("Faixa etária",5,6) %>%
     pack_rows("Sexo",7,8) %>%
     footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
-                        "Taxa: Taxa de mortalidade envolvendo óbitos por causas evitáveis",
+                        "Taxa: Taxa de mortalidade infantil",
                         "VPA(%): Porcentagem de variação anual"))
 ```
+
+
+
+A tabela acima apresenta 3 principais variáveis demográficas, sendo elas: Cor, Faixa etária e Sexo. 
+
+
+
+Analisando a variável Cor, é possível analisar que a taxa média de mortalidade infantil entre as crianças brancas é de 21,04, sendo a maior entre as demais categorias. A taxa média
+de mortalidade entre as crianças pardas é a segunda maior, com 15,84. Avaliando a tendências entre as categorias da variável Cor, nota-se que a mortalidade entre crianças brancas, pardas e pretas foi estacionária (p < 0,05) ao longo do período avaliado, apresentando um VPA de -0,105, -0,111 e -0,08, respectivamente. Entre os óbitos daqueles que não foi
+informado a cor, houve uma tendência crescente, com um VPA de 2,5. Não foi possível avaliar a tendência das demais categorias devido a ausência de valores durante o recorte temporal apresentado.
+
+
+
+Observando a variável Faixa etária, é possível notar 2 subdivisões, crianças a baixo de 1 ano e crianças entre 1 a 4 anos. A primeira categoria apresenta a maior taxa de mortalidade média, com 12.31 óbitos por 1000 nascidos vivos entre 2018 e 2022. A categoria de crianças entre 1 e 4 anos apresenta uma taxa de mortalidade média de 1,24. Nenhuma das categorias apresentou variação na tendência, permanecendo estacionárias no recorte temporal estabelecido. O VPA de ambas categorias foi de 0,009 e 0,095, respectivamente.
+
+
+Analisando a variável Sexo, é possível perceber que a taxa de mortalidade média entre o sexo masculino e feminino foi de 12,68 e 14,31, respectivamente. Não houve variação na tendência entre ambas as categorias, sendo o VPA do sexo masculino de 0,058 e do sexo feminino de -0,024.
+
+
 
 ```{r}
 dados_mortalidade = read.csv('dados/dados_mortalidade_infantil.csv')
@@ -424,6 +554,7 @@ pw_data_promocacao_saude = calculate_prais_winsten_summary_simples(dados_mort_na
 dados_promocacao_saude = criar_tabela_prais_winsten_summary_total_simples(dados_mort_nasc_promocacao_saude_2018_2022, pw_data_promocacao_saude)
 ```
 
+## Por tipo de CID
 
 ```{r}
 a = dados_causas_evitavel
@@ -442,15 +573,17 @@ e = dados_promocacao_saude
 colnames(e) = 1:dim(e)[2]
 
 rbind(a,b,c,d,e) %>%
-  kbl(caption="Mortalidade nas variáveis demográficas e sua respectiva taxa de mortalidade(por 1000 nascidos vivos), nos anos 2018 e 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>%
+  kbl(caption="Tipos de mortalidade e sua respectiva taxa de mortalidade (por 1000 nascidos vivos), nos anos 2018 e 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>%
     kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
     add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>%
     footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
-                        "Taxa: Taxa de mortalidade envolvendo óbitos por causas evitáveis",
+                        "Taxa: Taxa de mortalidade infantil",
                         "VPA(%): Porcentagem de variação anual"))
 ```
 
 
+
+Ao avaliar as causas de mortalidade infantil, é possível avaliar de forma individual determinados fatores, como é visto na tabela acima. As mortes por causas evitáveis são as que apresentam a maior média na taxa de mortalidade, com valor igual a 8,77. A categoria com a menor taxa de mortalidade média é que envolve ações adequadas de promoção à saúde, com uma taxa de média de 0,53. Todas as categorias apresentaram um tendência estacionária, dado o recorte de 2018 a 2022.
 
 
 ```{r include=FALSE}
@@ -486,17 +619,20 @@ data_cid = criar_tabela_prais_winsten_summary_total(dados_mort_nasc_cid_2018_202
 row.names(data_cid) = NULL
 ```
 
-```{r}
+```{r include=T}
 
- data_cid %>% 
+data_cid %>% 
     kbl(caption="Resultados da regressão de Prais-Winsten em relação à taxa de mortalidade de causas evitáveis nas regiões do DF, entre crianças de 0 a 5 anos, no período de 2018 a 2022.",booktabs=T, col.names = c("Variáveis","n","Taxa","n","Taxa","n","Taxa","n","Taxa","n","Taxa","p","VPA(%)","IC95%","Tendência"),format =  "latex") %>% 
     kable_styling(position = "center",latex_options=c("striped","HOLD_position","scale_down")) %>%
     add_header_above(c(" " = 1, "2018" = 2, "2019" = 2, "2020" = 2, "2021" = 2, "2022" = 2)) %>% 
   footnote(number = c('n: Número de óbitos relacionados a causas evitáveis',
-                        "Taxa: Taxa de mortalidade envolvendo óbitos por causas evitáveis",
+                        "Taxa: Taxa de mortalidade infantil",
                         "VPA(%): Porcentagem de variação anual"))
 ```
 
+
+
+\newpage
 
 ```{r}
 dados_mortalidade = read.csv('dados/dados_mortalidade_infantil.csv')
@@ -531,6 +667,26 @@ dados_pre_natal = dados_pre_natal %>%
   summarise(total = sum(`6 ou mais atendimentos`)) %>% 
   mutate(ano = as.integer(ano))
 
+
+dados_mortalidade_radf = dados_mortalidade %>% 
+    group_by(i_ano_obito, i_desc_radf_res) %>%
+    summarise(freq = n()) %>% 
+    rename("ano"=i_ano_obito, "regiao"=i_desc_radf_res) %>% 
+    data.table
+
+dados_nasc_vivos_radf = dados_nasc_vivos %>% 
+  group_by(i_ano_nasc, i_desc_radf_res_mae) %>% 
+  summarise(freq = n()) %>% 
+  rename("ano"=i_ano_nasc, "regiao"=i_desc_radf_res_mae) %>% 
+  data.table
+
+dados_mort_nasc_radf = merge(dados_mortalidade_radf, dados_nasc_vivos_radf, by = c("ano", "regiao"), all = TRUE) %>% 
+   mutate(freq.x = replace_na(freq.x,0),
+           taxa_mort = 1000*freq.x/freq.y,
+           log_taxa_mort = log(taxa_mort)) %>% 
+  rename('grupo'=regiao) %>% 
+  filter(log_taxa_mort != -Inf) %>% 
+  filter(!(grupo %in% c("SIA","Arniqueiras","Lago Norte","Varjão","Núcleo Bandeirante","Paranoá","Fercal","Sol Nascente","Vicente Pires","Candangolândia")))
 dados_pre_natal_taxa_mortalidade = merge(dados_mort_nasc_radf %>% rename("local"="grupo"), dados_pre_natal, by = c("ano", "local"), all = TRUE) %>% 
   na.omit() %>% 
   rename("obitos"="freq.x",
@@ -550,14 +706,23 @@ dados_pre_natal_taxa_mortalidade %>%
     geom_point()+
     geom_smooth(method = "lm", se = FALSE, color = "red") +  # Reta de regressão
     theme_minimal() +  # Tema minimalista
-    ggtitle("Relação entre a taxa de mortalidade por falta de assistência \n na gestação e a taxa de óbitos comparada com o número de mães \n que tiveram uma assistência adequada na gestação") +  # Título do gráfico
-    xlab("Taxa de Mortalidade por falta de assistência na gestação (por 1000 nascidos vivos)") +  # Rótulo do eixo X
-    ylab("Relação entre número de óbitos por falta de assitência \n na gestação e o número de mães que tiveram \n uma assistência adequada na gestação") +
+    ggtitle("Comparativo entre Mortalidade Infantil e Assistência na Gestação,\n por Região e Ano -  Distrito Federal (2018 a 2022)") +  # Título do gráfico
+    xlab("Taxa de mortalidade infantil por falta de assistência na gestação\n (por 1000 nascidos vivos)") +  # Rótulo do eixo X
+    ylab("Razão de óbitos por falta de assistência\n na gestação Versus Pré-natal adequado") +
     annotate("text", x = max_x, y = max_y, label = paste("r =", round(coef_corr, 2)), hjust = 1, vjust = 1, color = "black", size = 5)
-
 ```
+
+Observando o gráfico acima é possível perceber a relação linear entre a mortalidade infantil e as mães que tiveram uma assistência adequada na gestação. O eixo X representa a taxa 
+de mortalidade infantil por falta de assistência na gestação, a cada 1000 nascidos vivos. O eixo Y representa a razão entre o número de óbitos infantis por falta de assistência na gestação comparado com as mães que tiveram um adequado pré-natal. Cada ponto no gráfico é referente a alguma Região Administrativa (RA) do Distrito Federal durante os anos de 2018 a 2022.
+
+O gráfico mostra um relação negativa entre as mães que tiveram um pré-natal adequado e a taxa de mortalidade infantil por falta de assitência na gestação. Calculando o coeficiente de correlação de Pearson é possível encontrar um valor de -0,13, indicando correlação negativa entre esses dois fatores.
+
+Ao realizar o teste de correlação, com o intuiro de verificar se existe evidências estatísticas dessa relação, encontrou-se um p-valor de 0,27 para o teste. Considerando um 
+nível de confiança de 0,05, não se rejeita a hipótese de que ambas as variáveis não são relacionadas, concluindo então que não existem evidências estatísticas suficientes para provas a relação entre os 2 fatores.
+
 ```{r}
-cor.test(dados_pre_natal_taxa_mortalidade$taxa_mort, dados_pre_natal_taxa_mortalidade$`Pre Natal`)
+# cor.test(dados_pre_natal_taxa_mortalidade$taxa_mort, dados_pre_natal_taxa_mortalidade$`Pre Natal`)
 ```
 
 
+ref: https://ecampusontario.pressbooks.pub/introstats/chapter/13-6-testing-the-regression-coefficients/

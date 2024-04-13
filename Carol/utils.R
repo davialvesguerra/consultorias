@@ -1,9 +1,9 @@
 library(tidyverse)
 library(data.table)
 
-criar_tabela = function(data, coluna){
+criar_tabela = function(data, coluna, nome_coluna = ""){
   
-  nome_coluna = coluna
+
   
   tabela <- data %>% 
     rename('var'= coluna) %>% 
